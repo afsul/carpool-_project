@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import Ride,Preferences
+from .models import Ride
 
 # Register your models here.
 admin.site.register(Ride)
-admin.site.register(Preferences)
+# admin.site.register(Preferences)
