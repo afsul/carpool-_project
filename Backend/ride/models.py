@@ -16,3 +16,6 @@ class Ride(models.Model):
     smoking = models.BooleanField(default=False)
     pets = models.BooleanField(default=False)
     music = models.BooleanField(default=True) 
+
+    def __str__(self):
+        return str(self.source_city) + "  --->  " + str(self.destination_city) 

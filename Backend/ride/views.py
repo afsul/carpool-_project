@@ -1,8 +1,11 @@
+import re
+from urllib import response
+from webbrowser import get
 from requests import request
 
 from accounts.models import User
 from .models import Ride
-from .serializers import RideSerializer
+from .serializers import GetRiderInfo, RideSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
@@ -17,34 +20,40 @@ from rest_framework.views import APIView
 # create ride
 
 
-class Ride(APIView):
+class Ride_create(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RideSerializer
 
     def post(self, request):
-        # data = request.data
         user = User.objects.get(id=request.user.id)
-        # source_city = data['origin']
-        # destination_city = data['destination']
-        # date = data['date']
-        # time = data['time']
-        # seat = data['seat']
-        # amount = data['amount']
-        # smoking = data['smoking']
-        # pets = data['pets']
-        # music = data['music'] 
-        # print(data, '--------------------------------')
-
-        seri = RideSerializer(data=request.data)
-        # print(seri)
-        if seri.is_valid():
-            seri.save(user= user)
-            return Response(data = seri.data)
+        
+        create_ride = RideSerializer(data=request.data)
+        if create_ride.is_valid():
+            create_ride.save(user= user)
+            return Response(data = create_ride.data)
         else:
-            data = seri.errors
+            data = create_ride.errors
             return Response(data)
+    
+    
 
-        # Ride.objects.create(user=user,source_city=str(source_city),destination_city=str(destination_city),date="10-1-1-1",time=time,seat=seat,amount=int(amount))
 
+        
+        
+
+
+
+   
   
-            
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_rides(request):
+        print("Entered the function=============>")
+        print(request.data)
+        get_list = Ride.objects.filter(source_city=request.data["source_city"],destination_city=request.data["destination_city"],date=request.data["date"])
+        # get_list = Ride.objects.all()
+        print(get_list.count())
+        serializer_class = GetRiderInfo(get_list, many=True)
+        
+        return Response(serializer_class.data,status=status.HTTP_200_OK)
+    
