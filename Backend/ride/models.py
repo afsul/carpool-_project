@@ -16,6 +16,12 @@ class Ride(models.Model):
     smoking = models.BooleanField(default=False)
     pets = models.BooleanField(default=False)
     music = models.BooleanField(default=True) 
+    companion = models.ManyToManyField("Ride", blank=True)
 
     def __str__(self):
         return str(self.source_city) + "  --->  " + str(self.destination_city) 
+
+
+class Ride_Request(models.Model):
+    from_user = models.ForeignKey(Ride, related_name='from_user', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(Ride, related_name='to_user', on_delete=models.CASCADE) 

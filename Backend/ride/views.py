@@ -56,4 +56,16 @@ def get_rides(request):
         serializer_class = GetRiderInfo(get_list, many=True)
         
         return Response(serializer_class.data,status=status.HTTP_200_OK)
-    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_rides_object(request,id):
+        print("Entered the -----Get function=============>")
+        print(request.data)
+        get_list = Ride.objects.get(id=id)
+        # get_list = Ride.objects.all()
+        print(get_list)
+        serializer_class = GetRiderInfo(get_list)
+        
+        return Response(serializer_class.data,status=status.HTTP_200_OK)
+
