@@ -1,10 +1,11 @@
 import re
 from urllib import response
 from webbrowser import get
+from django.http import HttpResponse
 from requests import request
 
 from accounts.models import User
-from .models import Ride
+from .models import Copassengers, Ride, Ride_Request
 from .serializers import GetRiderInfo, RideSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -21,6 +22,7 @@ from rest_framework.views import APIView
 
 
 class Ride_create(APIView):
+    print("Entered create ride")
     permission_classes = [IsAuthenticated]
     serializer_class = RideSerializer
 
@@ -61,11 +63,74 @@ def get_rides(request):
 @permission_classes([IsAuthenticated])
 def get_rides_object(request,id):
         print("Entered the -----Get function=============>")
-        print(request.data)
         get_list = Ride.objects.get(id=id)
-        # get_list = Ride.objects.all()
+        
+        request.session['ride_idd'] = get_list.id 
+
         print(get_list)
+        print(get_list.id,"this is id==============-")
         serializer_class = GetRiderInfo(get_list)
         
         return Response(serializer_class.data,status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_ride_request(request, userID):
+    print("Send request entered===============>")
+
+    from_user = request.user
+    print(from_user,"From user")
+    to_user = User.objects.get(id=userID)
+
+    print(to_user,'to user ++++++++++++++++++++>')
+    
+    id_ride  = Ride.objects.get(id=request.session['ride_idd'])
+
+    # id_ride = request.session['ride_idd']
+    print(id_ride,"this is ride id-------------000000")
+    ride_request = Ride_Request.objects.create(from_user=from_user, to_user=to_user,ride_id = id_ride)
+
+    
+    print(ride_request)
+    if ride_request:
+        print("request sent===============>")
+
+        return Response(status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_ride_request(request, requestID):
+    print("Accept request entered===============>")
+    ride_request = Ride_Request.objects.get(id=requestID)
+    print(ride_request,'===================////////')
+    print(request.user,'this is request user')
+    if ride_request.to_user == request.user:
+        print("Entered if condition 0000000000000")
+        # ride_request.to_user.add(ride_request.from_user)
+        # ride_request.from_user.add(ride_request.to_user)
+        
+        copassengers = Copassengers.objects.create(passenger_name = ride_request.from_user, ride = ride_request.ride_id )
+        print(copassengers,"Copassengers")
+
+        seat_count = Ride.objects.get(id = ride_request.ride_id.id )
+        print(seat_count,"This is seat count------------->")
+        seat_count.seat =  seat_count.seat -1
+        seat_count.save()
+
+        
+        ride_request.delete()   
+        
+        print("request accepted===============>")
+
+        return Response(status=status.HTTP_201_CREATED)
+        
+    else:
+        ride_request.delete() 
+        print("Request Rejected")
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 

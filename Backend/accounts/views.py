@@ -1,5 +1,7 @@
 
 
+from django.views.generic.list import ListView
+from requests import request
 from .serializers import MyTokenObtainPairSerializer, SignUpSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics, status
@@ -45,6 +47,28 @@ class SignupView(generics.GenericAPIView):
             }
             return Response(data=response, status=status.HTTP_201_CREATED)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','PUT'])
+@permission_classes([IsAuthenticated])
+def UserProfileInfo(request):
+    print(request.user,"This is request user....----------9")
+    if request.method == 'GET':
+        response = User.objects.get(id=request.user.id)
+        serializer_class = SignUpSerializer(response)
+        return Response(data=serializer_class.data, status=status.HTTP_201_CREATED)
+    if request.method == 'PUT':
+        response = User.objects.get(id=request.user.id)
+        serializer_class = SignUpSerializer(response)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(data=serializer_class.data, status=status.HTTP_201_CREATED)
+
+
+
+# class UserProfileInfo(generics.RetrieveUpdateAPIView):
+#     queryset = User.objects.get(id=request.user.id)
+#     serializer_class = SignUpSerializer
+#     permission_classes = [IsAuthenticated]
 
     
 
@@ -132,3 +156,4 @@ def otp_send(request):
     user = User.objects.get(id=request.user.id)
     if(otp_send_to_number(user.phone)):
         return Response(status=status.HTTP_201_CREATED)
+

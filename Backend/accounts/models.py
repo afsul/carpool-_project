@@ -38,6 +38,7 @@ class User(AbstractUser):
     drivfile=models.ImageField(upload_to='drive_liscence/%Y/%m/%d', max_length=254,null =True)
     phone = models.BigIntegerField(null= True,unique=True)
     is_verified = models.BooleanField(default=False,null=True)
+    companion = models.ManyToManyField("User", blank=True)
     objects = CustomUserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username","password"]
